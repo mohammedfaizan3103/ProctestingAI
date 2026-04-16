@@ -1,0 +1,5 @@
+NAME                        ID              SIZE      MODIFIED     
+mistral:latest              6577803aa9a0    4.4 GB    8 months ago    
+mxbai-embed-large:latest    468836162de7    669 MB    8 months ago    
+llama3.2:latest             a80c4f17acd5    2.0 GB    8 months ago    
+gemma3:latest               a2af6cc3eb7f    3.3 GB    8 months ago    

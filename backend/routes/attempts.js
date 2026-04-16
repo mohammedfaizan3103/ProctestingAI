@@ -1,10 +1,11 @@
-const express = require("express");
-const auth = require("../middleware/authMiddleware");
-const Exam = require("../models/Exam");
-const Attempt = require("../models/Attempt");
-const ProctoringEvent = require("../models/ProctoringEvent");
-const User = require("../models/User");
-const Student = require("../models/Student");
+import express from "express";
+import auth from "../middleware/authMiddleware.js";
+import Exam from "../models/Exam.js";
+import Attempt from "../models/Attempt.js";
+import ProctoringEvent from "../models/ProctoringEvent.js";
+import User from "../models/User.js";
+import Student from "../models/Student.js";
+import crypto from "crypto";
 
 const router = express.Router();
 
@@ -34,6 +35,7 @@ const sanitizeExamForStudent = (exam) => ({
   title: exam.title,
   description: exam.description,
   durationMins: exam.durationMins,
+  proctoringTier: exam.proctoringTier,
   window: exam.window,
   questions: exam.questions.map((q) => ({
     type: q.type,
@@ -77,7 +79,7 @@ const scoreQuestion = (q, given) => {
 // POST /api/attempts/start { examId }
 router.post("/start", auth, auth.requireRole("student"), async (req, res) => {
   try {
-    const { examId } = req.body || {};
+    const { examId, deviceInfo, proctoringTier } = req.body || {};
     if (!examId) return res.status(400).json({ message: "examId is required" });
     // Load student academic profile from roster when principal is Student; fallback to Users for legacy
     let student = null;
@@ -176,6 +178,8 @@ router.post("/start", auth, auth.requireRole("student"), async (req, res) => {
         studentRef: req.user.model || "User",
         startedAt: now,
         status: "in-progress",
+        deviceInfo: deviceInfo || {},
+        proctoringTier: proctoringTier || "full"
       });
     } else if (attempt.status !== "in-progress") {
       let useRetake = false;
@@ -205,6 +209,8 @@ router.post("/start", auth, auth.requireRole("student"), async (req, res) => {
         studentRef: req.user.model || "User",
         startedAt: now,
         status: "in-progress",
+        deviceInfo: deviceInfo || {},
+        proctoringTier: proctoringTier || "full"
       });
     }
 
@@ -352,12 +358,74 @@ router.post("/submit", auth, auth.requireRole("student"), async (req, res) => {
     attempt.submittedAt = new Date();
     attempt.score = total;
     attempt.manualNeeded = manualNeeded;
+
+    // Calculate Integrity Score
+    let penalty = 0;
+    const penMap = {
+      "face-absent": 15,
+      "face-mismatch": 30,
+      "face-multiple": 30,
+      "gaze-away": 5,
+      "gaze-no-face": 10,
+      "tab-blur": 5,
+      "visibility-hidden": 10,
+      "fullscreen-exit": 10,
+      "window-resize": 10,
+    };
+    for (const v of attempt.violations || []) {
+      penalty += penMap[v.type] || 2;
+    }
+    attempt.integrityScore = Math.max(0, 100 - penalty);
+
+    // Calculate Blockchain Hash
+    const hashPayload = JSON.stringify({
+      attemptId: attempt._id.toString(),
+      studentId: attempt.studentId.toString(),
+      examId: attempt.examId.toString(),
+      score: attempt.score,
+      integrityScore: attempt.integrityScore,
+      violationsCount: (attempt.violations || []).length,
+      answers: attempt.answers || []
+    });
+    attempt.blockchainHash = crypto.createHash("sha256").update(hashPayload).digest("hex");
+
     await attempt.save();
 
     return res.json({
       score: total,
       manualNeeded,
       submittedAt: attempt.submittedAt,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// POST /api/attempts/:id/verify-hash
+router.post("/:id/verify-hash", auth, auth.requireRole("faculty"), async (req, res) => {
+  try {
+    const attempt = await Attempt.findById(req.params.id);
+    if (!attempt) return res.status(404).json({ message: "Attempt not found" });
+    
+    // Determine the expected hash from current DB data
+    const hashPayload = JSON.stringify({
+      attemptId: attempt._id.toString(),
+      studentId: attempt.studentId.toString(),
+      examId: attempt.examId.toString(),
+      score: attempt.score,
+      integrityScore: attempt.integrityScore,
+      violationsCount: (attempt.violations || []).length,
+      answers: attempt.answers || []
+    });
+    const calculatedHash = crypto.createHash("sha256").update(hashPayload).digest("hex");
+    
+    const verified = attempt.blockchainHash && attempt.blockchainHash === calculatedHash;
+    
+    return res.json({
+      verified,
+      storedHash: attempt.blockchainHash,
+      calculatedHash
     });
   } catch (err) {
     console.error(err);
@@ -427,7 +495,7 @@ router.get(
 
       const attempts = await Attempt.find({ examId: exam._id })
         .select(
-          "studentId studentRef status score submittedAt violations createdAt startedAt"
+          "studentId studentRef status score integrityScore blockchainHash submittedAt violations createdAt startedAt"
         )
         .populate({
           path: "studentId",
@@ -452,6 +520,8 @@ router.get(
             : null,
         status: a.status,
         score: a.score,
+        integrityScore: a.integrityScore,
+        blockchainHash: a.blockchainHash,
         submittedAt: a.submittedAt,
         startedAt: a.startedAt,
         violationsCount: (a.violations || []).length,
@@ -631,4 +701,4 @@ router.get("/:id/events", auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

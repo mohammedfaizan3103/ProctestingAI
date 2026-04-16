@@ -1,9 +1,9 @@
-const express = require("express");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const User = require("../models/User");
-const authMiddleware = require("../middleware/authMiddleware");
-const Student = require("../models/Student");
+import express from "express";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+import Student from "../models/Student.js";
 
 const router = express.Router();
 
@@ -196,7 +196,7 @@ router.get("/user", authMiddleware, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
 
 // Update current user's profile (authenticated)
 router.put("/profile", authMiddleware, async (req, res) => {

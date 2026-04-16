@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema(
   {
@@ -30,4 +30,4 @@ const UserSchema = new mongoose.Schema(
 
 // Store faculty/teachers in the 'teachers' collection while keeping the model name 'User'
 // to avoid widespread code changes. This only changes the underlying MongoDB collection name.
-module.exports = mongoose.model("User", UserSchema, "teachers");
+export default mongoose.model("User", UserSchema, "teachers");

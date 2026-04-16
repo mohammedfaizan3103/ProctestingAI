@@ -3,7 +3,7 @@
 
 const config = {
   // Backend base URL (set via environment variable)
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:5000",
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5000`,
 
   // Get the full API URL for a given endpoint
   getApiUrl: (endpoint) => {

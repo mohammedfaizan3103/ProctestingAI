@@ -1,10 +1,10 @@
-const express = require("express");
-const bcrypt = require("bcryptjs");
-const User = require("../models/User");
-const Student = require("../models/Student");
-const auth = require("../middleware/authMiddleware");
-const multer = require("multer");
-const XLSX = require("xlsx");
+import express from "express";
+import bcrypt from "bcryptjs";
+import User from "../models/User.js";
+import Student from "../models/Student.js";
+import auth from "../middleware/authMiddleware.js";
+import multer from "multer";
+import XLSX from "xlsx";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -206,8 +206,6 @@ router.post(
   }
 );
 
-module.exports = router;
-
 // List Student roster (directory)
 // GET /api/admin/students?search=&department=&college=&section=&year=&semester=&limit=&page=&sort=
 router.get("/students", auth, auth.requireRole("admin"), async (req, res) => {
@@ -356,3 +354,5 @@ router.post(
     }
   }
 );
+
+export default router;

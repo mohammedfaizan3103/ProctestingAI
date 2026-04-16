@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 // Roster of students uploaded by admin. Not used for authentication.
 const StudentSchema = new mongoose.Schema(
@@ -24,4 +24,4 @@ const StudentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Student", StudentSchema);
+export default mongoose.model("Student", StudentSchema);

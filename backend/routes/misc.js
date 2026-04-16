@@ -1,5 +1,5 @@
-const express = require("express");
-const SibApiV3Sdk = require("sib-api-v3-sdk");
+import express from "express";
+import SibApiV3Sdk from "sib-api-v3-sdk";
 
 const router = express.Router();
 
@@ -69,4 +69,4 @@ router.post("/contact", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

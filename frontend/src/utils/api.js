@@ -15,7 +15,7 @@ const normalizeBase = (base) => {
  * Example for Vite: VITE_API_BASE=https://your-backend.onrender.com
  * Example for CRA:  REACT_APP_API_BASE=https://your-backend.onrender.com
  */
-const envBase = import.meta.env?.VITE_API_BASE_URL || "http://localhost:5000";
+const envBase = import.meta.env?.VITE_API_BASE_URL || `http://${window.location.hostname}:5000`;
 
 const API_BASE = normalizeBase(envBase);
 
@@ -89,13 +89,17 @@ export const updateExam = (id, payload) =>
   API.put(`/exams/${id}`, payload, localAuthHeader());
 export const deleteExam = (id) => API.delete(`/exams/${id}`, localAuthHeader());
 
+/** ---------------- AI ---------------- **/
+export const generateAIQuestions = (prompt) =>
+  API.post("/ai/generate-questions", { prompt }, localAuthHeader());
+
 /** ---------------- STUDENT ---------------- **/
 export const listAvailableExams = () =>
   API.get("/exams/available", localAuthHeader());
 
 /** ---------------- ATTEMPTS ---------------- **/
-export const startAttempt = (examId) =>
-  API.post("/attempts/start", { examId }, localAuthHeader());
+export const startAttempt = (examId, payload = {}) =>
+  API.post("/attempts/start", { examId, ...payload }, localAuthHeader());
 export const saveAttempt = (attemptId, answers) =>
   API.post("/attempts/save", { attemptId, answers }, localAuthHeader());
 export const submitAttempt = (attemptId, answers) =>
@@ -108,6 +112,8 @@ export const getAttempt = (attemptId) =>
   API.get(`/attempts/${attemptId}`, localAuthHeader());
 export const logProctorEvent = (attemptId, type, meta) =>
   API.post(`/attempts/${attemptId}/proctor`, { type, meta }, localAuthHeader());
+export const verifyHash = (attemptId) =>
+  API.post(`/attempts/${attemptId}/verify-hash`, {}, localAuthHeader());
 
 /** ---------------- REVIEW / RETAKES ---------------- **/
 export const listAttemptsForExam = (examId) =>
@@ -125,3 +131,53 @@ export const getMarksheet = (examId) =>
 
 /** ---------------- CONTACT ---------------- **/
 export const sendContactMessage = (payload) => API.post(`/contact`, payload);
+
+/** ---------------- FACE PROCTORING ---------------- **/
+/**
+ * Register the student's face before the exam starts.
+ * @param {string} studentId - the student's roll number
+ * @param {Blob} imageBlob   - JPEG blob captured from webcam
+ */
+export const registerFace = (studentId, imageBlob) => {
+  const form = new FormData();
+  form.append("image", imageBlob, "capture.jpg");
+  return API.post(`/face/register/${encodeURIComponent(studentId)}`, form, {
+    headers: { ...localAuthHeader().headers, "Content-Type": "multipart/form-data" },
+  });
+};
+
+/**
+ * Periodic proctoring check during an exam.
+ * @param {string} studentId - the student's roll number
+ * @param {Blob} imageBlob   - JPEG blob from webcam snapshot
+ * @returns {{ violation_type: string, match: boolean, confidence: number, face_count: number }}
+ */
+export const checkFace = (studentId, imageBlob) => {
+  const form = new FormData();
+  form.append("image", imageBlob, "frame.jpg");
+  return API.post(`/face/check/${encodeURIComponent(studentId)}`, form, {
+    headers: { ...localAuthHeader().headers, "Content-Type": "multipart/form-data" },
+  });
+};
+
+/** ---------------- GAZE PROCTORING ---------------- **/
+
+export const sendGazeFrame = (studentId, imageBlob) => {
+  const form = new FormData();
+  form.append("image", imageBlob, "frame.jpg");
+  return API.post(`/face/gaze/frame/${encodeURIComponent(studentId)}`, form, {
+    headers: { ...localAuthHeader().headers, "Content-Type": "multipart/form-data" },
+  });
+};
+
+export const getGazeSummary = (studentId) => {
+  return API.get(`/face/gaze/summary/${encodeURIComponent(studentId)}`, localAuthHeader());
+};
+
+export const endGazeSession = (studentId) => {
+  return API.post(`/face/gaze/end/${encodeURIComponent(studentId)}`, {}, localAuthHeader());
+};
+
+export const getActiveGazeSessions = () => {
+  return API.get(`/face/gaze/active`, localAuthHeader());
+};

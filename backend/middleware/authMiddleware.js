@@ -1,5 +1,7 @@
-const jwt = require("jsonwebtoken");
-require("dotenv").config();
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 // Auth middleware: validates JWT and attaches decoded payload
 const auth = (req, res, next) => {
@@ -30,4 +32,4 @@ const requireRole =
 
 // Backward-compatible export: default is auth; attach requireRole
 auth.requireRole = requireRole;
-module.exports = auth;
+export default auth;

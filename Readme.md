@@ -59,9 +59,27 @@ MONGO_URI=mongodb://localhost:27017/proctesting    # or your Atlas URI
 JWT_SECRET=replace-with-a-strong-secret
 PORT=5000                                          # optional; defaults to 5000
 CLIENT_URL=http://localhost:5173                   # Vite dev URL for CORS
+GOOGLE_API_KEY=your-gemini-api-key                 # API key for the Python Langchain agent
 ```
 
-2. Install and start the server:
+2. Set up the Python virtual environment for the AI Agent:
+
+```
+cd backend/services/ai
+python -m venv venv
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+# On Git Bash:
+source venv/Scripts/activate
+
+pip install -r requirements.txt
+# Go back to the backend directory
+cd ../..
+```
+
+3. Install Node dependencies and start the server:
 
 ```
 cd backend

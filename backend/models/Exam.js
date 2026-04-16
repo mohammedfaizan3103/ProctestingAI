@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const QuestionSchema = new mongoose.Schema(
   {
@@ -61,6 +61,11 @@ const ExamSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    proctoringTier: {
+      type: String,
+      enum: ["full", "snapshot", "event-only"],
+      default: "full"
+    },
   },
   { timestamps: true }
 );
@@ -96,4 +101,4 @@ ExamSchema.path("questions").validate(function (questions) {
   return true;
 }, "Invalid questions configuration");
 
-module.exports = mongoose.model("Exam", ExamSchema);
+export default mongoose.model("Exam", ExamSchema);

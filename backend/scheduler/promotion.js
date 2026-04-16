@@ -1,4 +1,4 @@
-const Student = require("../models/Student");
+import Student from "../models/Student.js";
 
 // Return cycle tag: 'YYYY-01' for January, 'YYYY-07' for July; null otherwise
 function currentCycleTag(now = new Date()) {
@@ -65,7 +65,4 @@ function scheduleDailyRunner() {
   }, TWELVE_HOURS_MS);
 }
 
-module.exports = {
-  scheduleDailyRunner,
-  runPromotionCycle, // exported for potential manual trigger/testing
-};
+export { scheduleDailyRunner, runPromotionCycle };

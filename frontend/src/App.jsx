@@ -16,12 +16,14 @@ import AdminUsers from "./pages/AdminUsers";
 import FacultyExams from "./pages/FacultyExams";
 import ExamEditor from "./pages/ExamEditor";
 import FacultySubmissions from "./pages/FacultySubmissions";
+import FacultyLiveView from "./pages/FacultyLiveView";
 import StudentExams from "./pages/StudentExams";
 import ExamRunner from "./pages/ExamRunner";
 import StudentProfile from "./pages/StudentProfile";
 import FacultyProfile from "./pages/FacultyProfile";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import FacultyLiveAlerts from "./components/FacultyLiveAlerts";
 import PropTypes from "prop-types";
 
 const PrivateRoute = ({ children }) =>
@@ -50,6 +52,7 @@ function AppShell() {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       {!hideNavbar && <Navbar />}
+      <FacultyLiveAlerts />
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -141,6 +144,16 @@ function AppShell() {
               <PrivateRoute>
                 <RoleRoute allow={["faculty"]}>
                   <FacultySubmissions />
+                </RoleRoute>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/faculty/exams/:examId/live"
+            element={
+              <PrivateRoute>
+                <RoleRoute allow={["faculty"]}>
+                  <FacultyLiveView />
                 </RoleRoute>
               </PrivateRoute>
             }

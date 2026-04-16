@@ -1,9 +1,9 @@
-const express = require("express");
-const Exam = require("../models/Exam");
-const Attempt = require("../models/Attempt");
-const User = require("../models/User");
-const Student = require("../models/Student");
-const auth = require("../middleware/authMiddleware");
+import express from "express";
+import Exam from "../models/Exam.js";
+import Attempt from "../models/Attempt.js";
+import User from "../models/User.js";
+import Student from "../models/Student.js";
+import auth from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -98,7 +98,7 @@ router.get(
         "window.end": { $gte: now },
       })
         .select(
-          "title description durationMins window assignmentCriteria retakeGrants"
+          "title description durationMins window assignmentCriteria proctoringTier retakeGrants"
         )
         .sort({ "window.start": 1 });
 
@@ -278,4 +278,4 @@ router.delete("/:id", auth, auth.requireRole("faculty"), async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

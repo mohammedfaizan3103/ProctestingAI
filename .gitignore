@@ -3,3 +3,24 @@ backend/node_modules
 
 backend/.env
 frontend/.env
+
+backend/venv
+
+# Python / FastAPI
+python_microservice/venv/
+python_microservice/.venv/
+python_microservice/env/
+python_microservice/__pycache__/
+python_microservice/**/*.py[cod]
+python_microservice/.pytest_cache/
+python_microservice/.mypy_cache/
+python_microservice/.ruff_cache/
+python_microservice/.coverage
+python_microservice/.env
+python_microservice/.env.*
+python_microservice/face_db.db
+backend/package-lock.json
+frontend/package-lock.json
+backend/package-lock.json
+frontend/package-lock.json
+frontend/package-lock.json

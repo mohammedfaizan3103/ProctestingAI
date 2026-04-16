@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const AnswerSchema = new mongoose.Schema(
   {
@@ -17,6 +17,12 @@ const ViolationSchema = new mongoose.Schema(
         "visibility-hidden",
         "fullscreen-exit",
         "return-timeout",
+        "window-resize",
+        "face-absent",
+        "face-mismatch",
+        "face-multiple",
+        "gaze-away",
+        "gaze-no-face"
       ],
     },
     at: { type: Date, default: Date.now },
@@ -55,8 +61,20 @@ const AttemptSchema = new mongoose.Schema(
       default: "in-progress",
       index: true,
     },
+    deviceInfo: {
+      cores: { type: Number },
+      memory: { type: Number },
+      os: { type: String }
+    },
+    proctoringTier: {
+      type: String,
+      enum: ["full", "snapshot", "event-only"],
+      default: "full"
+    },
     answers: { type: [AnswerSchema], default: [] },
     score: { type: Number, default: 0 },
+    integrityScore: { type: Number, default: 100 },
+    blockchainHash: { type: String, default: null },
     manualNeeded: { type: Boolean, default: false },
     violations: { type: [ViolationSchema], default: [] },
   },
@@ -68,4 +86,4 @@ AttemptSchema.index(
   { unique: false }
 );
 
-module.exports = mongoose.model("Attempt", AttemptSchema);
+export default mongoose.model("Attempt", AttemptSchema);

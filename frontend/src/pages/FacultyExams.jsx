@@ -122,6 +122,12 @@ const FacultyExams = () => {
                     >
                       Submissions
                     </Link>
+                    <Link
+                      to={`/faculty/exams/${ex._id}/live`}
+                      className="text-indigo-600 hover:underline font-semibold"
+                    >
+                      Live View
+                    </Link>
                     <button
                       onClick={() => onDelete(ex._id)}
                       className="text-red-600"
